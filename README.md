@@ -17,7 +17,7 @@
 ```
 
 2. **При добавлении сделать запрос в АПИ, описанного сваггером**
-
+```yaml
 openapi: 3.0.3
 info:
   title: Music info
@@ -65,7 +65,7 @@ components:
         link:
           type: string
           example: https://www.youtube.com/watch?v=Xsp3_a-PMTw
-
+```
 
 3. **Обогащенную информацию положить в БД postgres (структура БД должна быть создана путем миграций при старте сервиса)**
 4. **Покрыть код debug- и info-логами**
