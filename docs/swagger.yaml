@@ -1,0 +1,122 @@
+basePath: /
+definitions:
+  internal_user.Song:
+    properties:
+      group:
+        example: Pizza
+        type: string
+      id:
+        type: string
+      link:
+        example: https://www.youtube.com/watch?v=Eyp3bnl5Cng
+        type: string
+      releaseDate:
+        example: 24.10.2014
+        type: string
+      song:
+        example: Lift
+        type: string
+      text:
+        example: |
+          Скорее, минуты летите, чтобы я вас не заметил
+          И поспешите на третий, свободы мне принесите
+          Скорее, минуты летите, чтобы я вас не заметил
+          И поспешите на третий, откройте, освободите
+        type: string
+    type: object
+host: localhost:10000
+info:
+  contact: {}
+  description: Swagger API for Golang Project Song-library
+  title: Song-libary Swagger API
+  version: "1.0"
+paths:
+  /info:
+    get:
+      parameters:
+      - description: group
+        in: query
+        name: group
+        type: string
+      - description: song
+        in: query
+        name: song
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_user.Song'
+      summary: Retrieves info about song based on given parametres
+  /new:
+    post:
+      consumes:
+      - application/json
+      responses:
+        "201":
+          description: No content
+        "400":
+          description: Invalid input
+        "500":
+          description: Internal server error
+      summary: Adding a new song to the library
+  /remove:
+    delete:
+      parameters:
+      - description: group
+        in: query
+        name: group
+        type: string
+      - description: song
+        in: query
+        name: song
+        type: string
+      responses:
+        "204":
+          description: No content
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+      summary: Deleting a song by its group and name
+  /search:
+    get:
+      parameters:
+      - description: group
+        in: query
+        name: group
+        type: string
+      - description: song
+        in: query
+        name: song
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_user.Song'
+      summary: Retrieves songs based on given parametres
+  /update:
+    patch:
+      parameters:
+      - description: group
+        in: query
+        name: group
+        type: string
+      - description: song
+        in: query
+        name: song
+        type: string
+      responses:
+        "200":
+          description: No content
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+      summary: Update song information
+swagger: "2.0"

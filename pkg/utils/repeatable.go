@@ -1,7 +1,7 @@
 package repeatable
 
 import(
-	"net/http"
+	"github.com/gin-gonic/gin"
 	"time"
 )
 
@@ -20,7 +20,7 @@ func DoWithTries(fn func() error, attemtps int, delay time.Duration) (err error)
 	return
 }
 
-func CheckContentType(r *http.Request) bool {
-	contentType := r.Header.Get("Content-Type")
+func CheckContentType(ctx *gin.Context) bool {
+	contentType := ctx.Request.Header.Get("Content-Type")
 	return contentType == "application/json"
 }

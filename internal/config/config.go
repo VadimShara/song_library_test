@@ -3,27 +3,17 @@ package config
 import (
 	"sync"
 	"song-lib/pkg/logging"
-	
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	IsDebug *bool `yaml:"is_debug"`
+	IsDebug bool `env:"LISTEN_IS_DEBUG"`
 	Listen  struct {
-		Type   string `yaml:"type"`
-		BindIP string `yaml:"bind_ip"`
-		Port   string `yaml:"port"`
-	} `yaml:"listen"`
-	//Storage StorageConfig `yaml:"storage"`
+		Type   string `env:"LISTEN_TYPE"`
+		BindIP string `env:"LISTEN_BIND_IP"`
+		Port   string `env:"LISTEN_PORT"`
+	}
 }
-
-// type StorageConfig struct {
-// 	Host 		string	`json:"host"`
-// 	Port		string	`json:"port"`
-// 	Database	string	`json:"database"`
-// 	Username	string	`json:"username"`
-// 	Password	string	`json:"password"`
-// }
 
 var instance *Config
 var once sync.Once
@@ -33,7 +23,7 @@ func GetConfig() *Config {
 		logger := logging.GetLogger()
 		logger.Info("read application configuraion")
 		instance = &Config{}
-		if err := cleanenv.ReadConfig("C:/Users/vadim/song-lib/config.yml", instance); err != nil {
+		if err := cleanenv.ReadConfig("C:/Users/vadim/song-lib/.env", instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
 			logger.Info(help)
 			logger.Fatal(err)

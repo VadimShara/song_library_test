@@ -123,24 +123,27 @@ func (r *repository) FindWithFilter(ctx context.Context, s *user.Song) ([]user.S
 }
 
 func (r *repository) FindOne(ctx context.Context, s *user.Song) (*user.Song, error) {
-	q := `SELECT releaseDate, text, link FROM library WHERE "group" = $1 and song = $2`
-	r.logger.Trace(fmt.Sprintf("SQL query: %s", formatQuery(q)))
+    q := `SELECT releaseDate, text, link FROM library WHERE "group" = $1 and song = $2`
+    r.logger.Trace(fmt.Sprintf("SQL query: %s", formatQuery(q)))
 
-	rows, err := r.client.Query(ctx, q, s.Group, s.Song)
-	if err != nil {
-		r.logger.Error(err)
-		return nil, err
-	}
+    rows, err := r.client.Query(ctx, q, s.Group, s.Song)
+    if err != nil {
+        r.logger.Error(err)
+        return nil, err
+    }
+    defer rows.Close() 
 
-	for rows.Next() {
-		err = rows.Scan(&s.ReleaseDate, &s.Text, &s.Link)
-		if err != nil {
-			r.logger.Error(err)
-			return nil, err
-	}
-	}
-	
-	return s, nil
+    if !rows.Next() {
+        return nil, fmt.Errorf("song not found")
+    }
+
+    err = rows.Scan(&s.ReleaseDate, &s.Text, &s.Link)
+    if err != nil {
+        r.logger.Error(err)
+        return nil, err 
+    }
+
+    return s, nil
 }
 
 func (r *repository) Delete(ctx context.Context, s *user.Song) error {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "song-lib/docs"
 	"context"
 	"database/sql"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	"song-lib/pkg/logging"
 	"time"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/julienschmidt/httprouter"
 	"github.com/pressly/goose/v3"
 	"github.com/joho/godotenv"
 	"os"
@@ -28,18 +28,11 @@ import (
 // @host localhost:10000
 // @BasePath /
 func main(){
-	router := httprouter.New()
-
-	router.GET("/swagger/*any", ginToHttprouter(ginSwagger.WrapHandler(swaggerFiles.Handler)))
+	router := gin.Default()
 
 	cfg := config.GetConfig()
 	logger := logging.GetLogger()
-
-	rep := databaseConnection(logger)
 	
-	handler := user.NewHandler(rep, logger)
-	handler.Register(router)
-
 	start(router, cfg, logger)
 }
 
@@ -69,8 +62,17 @@ func databaseConnection(logger *logging.Logger) user.Repository{
 	return rep
 }
 
-func start(router *httprouter.Router, cfg *config.Config, logger *logging.Logger) {
+func start(router *gin.Engine, cfg *config.Config, logger *logging.Logger) {
 	logger.Info("start application")
+
+	rep := databaseConnection(logger)
+	logger.Info("database successfully connected and migrated")
+
+	handler := user.NewHandler(rep, logger)
+	handler.Register(router)
+
+	url := ginSwagger.URL("http://localhost:10000/swagger/doc.json")
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	logger.Info("listen tcp")
 	listener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
@@ -88,12 +90,4 @@ func start(router *httprouter.Router, cfg *config.Config, logger *logging.Logger
 	}
 
 	logger.Fatal(server.Serve(listener))
-}
-
-func ginToHttprouter(h gin.HandlerFunc) httprouter.Handle {
-    return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-        c, _ := gin.CreateTestContext(w)
-        c.Request = r
-        h(c)
-    }
 }

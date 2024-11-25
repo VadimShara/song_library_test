@@ -3,35 +3,31 @@ package apperror
 import (
 	"errors"
 	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
-type apphandler func(w http.ResponseWriter, r *http.Request) error
+type apphandler func(c *gin.Context) error
 
-func Middleware(h apphandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func Middleware(h apphandler) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		var appErr *AppError
-		err := h(w, r)
+		err := h(ctx)
 		if err != nil {
 			if errors.As(err, &appErr) {
 				if errors.Is(err, ErrNotFound) {
-					w.WriteHeader(http.StatusNotFound)
-					w.Write(ErrNotFound.Marshal())
+					ctx.JSON(http.StatusNotFound, gin.H{"error": ErrNotFound.Marshal()})
+					return
+				} else if errors.Is(err, DatabaseErr) {
+					ctx.JSON(http.StatusInternalServerError, gin.H{"error": DatabaseErr.Marshal()})
 					return
 				}
-				// } else if errors.Is(err, NotAuthErr) {
-				// 	w.WriteHeader(http.StatusUnautharized)
-				// 	w.Write(ErrNotFound.Marshal())
-				// 	return
-				// }
 
 				err = err.(*AppError)
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write(ErrNotFound.Marshal())
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": ErrNotFound.Marshal()})
 				return
 			}
 
-			w.WriteHeader(http.StatusTeapot)
-			w.Write(systemError(err).Marshal())
+			ctx.JSON(http.StatusTeapot, gin.H{"error": systemError(err).Marshal()})
 		}
 	}
 }
